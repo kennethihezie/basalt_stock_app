@@ -3,29 +3,44 @@ import 'dart:developer';
 
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:marketstack_api/src/models/tickers.dart';
 import '../../marketstack_api.dart';
 
-final _accessKey = '38664d59e2c8261420fbf2726390dd2e';
+final _accessKey = '182ba6ee7d8fcc4c6e4bbfdaa07de004';
 
 class StockRequestFailure implements Exception {}
 
 class StockNotFoundFailure implements Exception {}
 
-enum StockSort{
-  DESC,
-  ASC
-}
 
 class MarketStackApiClient {
   final http.Client _httpClient;
   MarketStackApiClient({http.Client? httpClient}) : _httpClient = httpClient ?? http.Client();
 
-  static const _baseUrlWeather = 'http://api.marketstack.com/v1/intraday';
+  static const _baseUrlWeather = 'http://api.marketstack.com/v1';
 
-  Future<Stock> getStockData(String symbols, {DateTime? date_from, DateTime? date_to, int? limit}) async {
-    final dateFormat = DateFormat('y-M-d');
-    // final stockResponse = await _httpClient.get(Uri.parse("$_baseUrlWeather?access_key=$_accessKey&symbols=$symbols&date_from=${dateFormat.format(date_from ?? DateTime.now())}&date_to=${dateFormat.format(date_to ?? DateTime.now())}&limit=$limit"));
-    final stockResponse = await _httpClient.get(Uri.parse("$_baseUrlWeather?access_key=$_accessKey&symbols=$symbols&limit=$limit"));
+  Future<List<Stock>> getStockData({String? date_from, String? date_to}) async {
+     final getTickersResponse = await _httpClient.get(Uri.parse("$_baseUrlWeather/tickers?access_key=$_accessKey&limit=10"));
+
+     if(getTickersResponse.statusCode != 200){
+       throw StockRequestFailure();
+     }
+
+     final tickerJson = jsonDecode(getTickersResponse.body) as Map;
+     if(!tickerJson.containsKey('data')) throw StockNotFoundFailure();
+
+     final tickersResult = tickerJson['data'] as List;
+     if(tickersResult.isEmpty) throw StockNotFoundFailure();
+
+     final tickers = List<Tickers>.from(tickersResult.map((data) => Tickers.fromJson(data as Map<String, dynamic>)));
+
+     final stockSymbols = [];
+
+     for(var i in tickers){
+       stockSymbols.add(i.symbol);
+     }
+
+     final stockResponse = await _httpClient.get(Uri.parse("$_baseUrlWeather/intraday?access_key=$_accessKey&symbols=${stockSymbols.join(',')}&limit=10"));
 
     if(stockResponse.statusCode != 200){
       throw StockRequestFailure();
@@ -34,10 +49,20 @@ class MarketStackApiClient {
     final stockJson = jsonDecode(stockResponse.body) as Map;
     if(!stockJson.containsKey('data')) throw StockNotFoundFailure();
 
+    log("STC $stockJson");
+
     final results = stockJson['data'] as List;
     if(results.isEmpty) throw StockNotFoundFailure();
 
-    return Stock.fromJson(results.first as Map<String, dynamic>);
+    return List<Stock>.from(results.map((data) {
+      final stock = Stock.fromJson(data as Map<String, dynamic>);
+      for(var i in tickers){
+        if(i.symbol == stock.symbol){
+          stock.name = i.name;
+        }
+      }
+      return stock;
+    }));
   }
 
 }

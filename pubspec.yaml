@@ -38,6 +38,8 @@ dependencies:
   json_annotation: ^4.4.0
   path_provider: ^2.0.8
   equatable: ^2.0.5
+  intl: ^0.17.0
+  connectivity_plus: ^0.0.1
   marketstack_api:
     path: packages/marketstack_api
 

@@ -1,14 +1,12 @@
 import 'package:basalt_stock_app/widgets/typography.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:marketstack_api/marketstack_api.dart';
 
 import '../../widgets/colors.dart';
 
 class StockModel extends StatelessWidget {
-   StockModel({Key? key, required this.symbol, required this.name, required this.value, required this.counter, }) : super(key: key);
-   final String symbol;
-   final String name;
-   final String value;
-   final String counter;
+   StockModel({Key? key, required this.stock}) : super(key: key);
+   final Stock stock;
 
   @override
   Widget build(BuildContext context) {
@@ -22,26 +20,26 @@ class StockModel extends StatelessWidget {
 
       child: Row(
         children: [
-          textSemiBold(symbol, BasaltColors.A181212),
+          textSemiBold(stock.symbol ?? '', BasaltColors.A181212),
 
           const Padding(padding: EdgeInsets.only(left: 8.0)),
 
-          textMiniTextRegular(name, BasaltColors.A181212),
+          textMiniTextRegular(stock.name ?? '', BasaltColors.A181212),
 
           const Spacer(),
 
-          textSemiBold(value, BasaltColors.A181212),
+          textSemiBold(stock.open.toString() ?? '', BasaltColors.A181212),
 
           const Padding(padding: EdgeInsets.only(left: 8.0)),
 
           Container(
-            padding: EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(8.0),
             decoration: BoxDecoration(
               color: BasaltColors.green,
               borderRadius: BorderRadius.circular(8.0)
             ),
 
-            child: textSmall(counter, BasaltColors.white),
+            child: textSmall("+ ${(stock.high! - stock.low!).toStringAsPrecision(2)}" ?? '', BasaltColors.white),
           )
         ],
       ),

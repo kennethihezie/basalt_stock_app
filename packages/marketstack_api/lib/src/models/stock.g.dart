@@ -13,8 +13,9 @@ Stock _$StockFromJson(Map<String, dynamic> json) => $checkedCreate(
       json,
       ($checkedConvert) {
         final val = Stock(
-          $checkedConvert('adj_close', (v) => (v as num?)?.toDouble()),
-          $checkedConvert('adj_open', (v) => (v as num?)?.toDouble()),
+          adj_close:
+              $checkedConvert('adj_close', (v) => (v as num?)?.toDouble()),
+          adj_open: $checkedConvert('adj_open', (v) => (v as num?)?.toDouble()),
           open: $checkedConvert('open', (v) => (v as num?)?.toDouble()),
           high: $checkedConvert('high', (v) => (v as num?)?.toDouble()),
           low: $checkedConvert('low', (v) => (v as num?)?.toDouble()),
@@ -29,6 +30,7 @@ Stock _$StockFromJson(Map<String, dynamic> json) => $checkedCreate(
           dividend: $checkedConvert('dividend', (v) => (v as num?)?.toDouble()),
           symbol: $checkedConvert('symbol', (v) => v as String?),
           exchange: $checkedConvert('exchange', (v) => v as String?),
+          name: $checkedConvert('name', (v) => v as String?),
           date: $checkedConvert('date', (v) => v as String?),
         );
         return val;

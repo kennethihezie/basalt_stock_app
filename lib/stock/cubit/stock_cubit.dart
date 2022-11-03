@@ -9,12 +9,21 @@ class StockCubit extends Cubit<StockState> {
 
   StockCubit(this._stockRepository) : super(const StockState());
 
-  Future<void> getStockData(String symbols, {DateTime? dateFrom, DateTime? dateTo, int? limit}) async {
+  Future<void> getStockData({String? dateFrom, String? dateTo, int? limit}) async {
     emit(state.copyWith(status: StockStatus.loading));
 
     try {
-      final stock = await _stockRepository.getStocksData(symbols, dateFrom: dateFrom, dateTo: dateTo, limit: limit);
+      final stock = await _stockRepository.getStocksData(dateFrom: dateFrom, dateTo: dateTo);
       emit(state.copyWith(status: StockStatus.success, stock: stock));
+    } on Exception {
+      emit(state.copyWith(status: StockStatus.failure));
+    }
+  }
+
+   searchStock(List<Stock> stocks, String query){
+    try{
+      final result = stocks.where((element) => element.symbol!.contains(query.toUpperCase())).toList();
+      emit(state.copyWith(status: StockStatus.success, stock: result));
     } on Exception {
       emit(state.copyWith(status: StockStatus.failure));
     }

@@ -13,6 +13,8 @@ dependencies:
   http: ^0.13.0
   json_annotation: ^4.6.0
   intl: ^0.17.0
+  connectivity_plus: ^0.0.1
+
 
 
 

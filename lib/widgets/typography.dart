@@ -1,6 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+Widget textHeading5(String text, Color color, {TextAlign? align}) {
+  return Text(text,
+      textAlign: align,
+      style: GoogleFonts.notoSans(
+          fontWeight: FontWeight.w700,
+          fontSize: 16,
+          decoration: TextDecoration.none,
+          color: color
+      ));
+}
+
 Widget textSemiBold(String text, Color color, {TextAlign? align}) {
   return Text(text,
       textAlign: align,

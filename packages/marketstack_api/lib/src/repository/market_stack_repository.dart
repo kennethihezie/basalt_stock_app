@@ -1,10 +1,11 @@
 import '../../marketstack_api.dart';
 
+
 class StockRepository {
   final MarketStackApiClient _stockApiClient;
   StockRepository({MarketStackApiClient? marketStackApiClient}) : _stockApiClient = marketStackApiClient ?? MarketStackApiClient();
 
-  Future<Stock> getStocksData(String symbols, {DateTime? dateFrom, DateTime? dateTo, int? limit}) async {
-    return await _stockApiClient.getStockData(symbols, date_from: dateFrom, date_to: dateTo, limit: limit);
+  Future<List<Stock>> getStocksData({String? dateFrom, String? dateTo}) async {
+    return await _stockApiClient.getStockData(date_from: dateFrom, date_to: dateTo);
   }
 }

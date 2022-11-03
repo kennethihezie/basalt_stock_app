@@ -11,11 +11,11 @@ extension StockStatusX on StockStatus {
 
 class StockState extends Equatable {
    final StockStatus status;
-   final Stock? stock;
+   final List<Stock>? stock;
 
    const StockState({this.status = StockStatus.initial, this.stock});
 
-   StockState copyWith({StockStatus? status, Stock? stock}){
+   StockState copyWith({StockStatus? status, List<Stock>? stock}){
      return StockState(status: status ?? this.status, stock: stock ?? this.stock);
    }
 
