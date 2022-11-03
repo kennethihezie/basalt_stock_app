@@ -39,6 +39,7 @@ dependencies:
   path_provider: ^2.0.8
   equatable: ^2.0.5
   intl: ^0.17.0
+  pull_to_refresh: ^2.0.0
   connectivity_plus: ^0.0.1
   marketstack_api:
     path: packages/marketstack_api

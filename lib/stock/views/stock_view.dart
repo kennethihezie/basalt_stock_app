@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:basalt_stock_app/stock/cubit/stock_cubit.dart';
 import 'package:basalt_stock_app/widgets/colors.dart';
 import 'package:basalt_stock_app/widgets/loading_widget.dart';
@@ -9,11 +8,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:marketstack_api/marketstack_api.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
+import '../../widgets/custom_loader.dart';
 import '../../widgets/no_network_widget.dart';
 import '../../widgets/typography.dart';
 import '../model/stock_model.dart';
-
-
 
 class StockView extends StatefulWidget {
   const StockView({Key? key}) : super(key: key);
@@ -35,11 +34,12 @@ class _StockViewState extends State<StockView> {
   @override
   void initState() {
     _getCurrentDate();
-    _checkForNetwork();
 
-    if(_isConnected){
-      context.read<StockCubit>().getStockData();
-    }
+   Future.delayed(const Duration(), () async {
+     if(await _checkForNetwork()){
+       context.read<StockCubit>().getStockData();
+     }
+   });
     super.initState();
   }
 
@@ -108,24 +108,39 @@ class _StockViewState extends State<StockView> {
         ),
         centerTitle: false,
       ),
-      body: Container(
-        color: BasaltColors.background,
-        padding: const EdgeInsets.all(16),
-        child: BlocConsumer<StockCubit, StockState>(
-          listener: (context, state){
-            if(state.status.isSuccess){
-              print("success");
-            }
-          },
+      body: SmartRefresher(
+        enablePullUp: true,
+        header: customLoadingHeader(),
+        onRefresh: _onRefresh,
+        controller: _refreshController,
+        child: Container(
+          color: BasaltColors.background,
+          padding: const EdgeInsets.all(16),
+          child: BlocConsumer<StockCubit, StockState>(
+            listener: (context, state){
+              if(state.status.isSuccess){
+                //print("success");
+              }
+            },
 
-          builder: (context, state) {
-            return _isConnected ? _viewController(state) : NoNetworkWidget();
-          },
+            builder: (context, state) {
+              return _isConnected ? _viewController(state) : const NoNetworkWidget();
+            },
+          ),
         ),
       ),
 
       bottomNavigationBar: _buildBottomBar(),
     );
+  }
+
+  final _refreshController = RefreshController(initialRefresh: false);
+
+  void _onRefresh() async {
+    if(await _checkForNetwork()){
+      context.read<StockCubit>().getStockData();
+    }
+    _refreshController.refreshCompleted();
   }
 
   Widget _viewController(StockState state){
@@ -249,34 +264,47 @@ class _StockViewState extends State<StockView> {
     return days;
   }
 
-  _getCurrentDate(){
+  _getCurrentDate() async {
     var now = DateTime.now();
     var formatter = DateFormat('yyyy-MM-dd');
     setState(() {
       date = formatter.format(now);
     });
 
-    context.read<StockCubit>().getStockData(dateFrom: date, dateTo: date);
+    if(await _checkForNetwork()){
+      context.read<StockCubit>().getStockData(dateFrom: date, dateTo: date);
+    }
   }
   
-  _getDateWithRange(int day){
+  _getDateWithRange(int day) async {
     var now = DateTime.now();
     var date = DateTime(now.year, now.month, -day);
     var formatter = DateFormat('yyyy-MM-dd');
     setState(() {
       this.date = formatter.format(date);
     });
-    context.read<StockCubit>().getStockData(dateFrom: formatter.format(now), dateTo: this.date);
+
+    if(await _checkForNetwork()){
+      context.read<StockCubit>().getStockData(dateFrom: formatter.format(now), dateTo: this.date);
+    }
   }
 
-  _checkForNetwork() async{
+  Future<bool> _checkForNetwork() async{
     try {
       final result = await InternetAddress.lookup('google.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        _isConnected = true;
+        setState(() {
+          _isConnected = true;
+        });
+       return true;
       }
-    } on SocketException catch (_) {
-      _isConnected = false;
+    } on SocketException catch (e) {
+      print(e.message);
+      setState(() {
+        _isConnected = false;
+      });
     }
+
+    return false;
   }
 }

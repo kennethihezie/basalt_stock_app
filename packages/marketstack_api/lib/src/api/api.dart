@@ -6,12 +6,11 @@ import 'package:intl/intl.dart';
 import 'package:marketstack_api/src/models/tickers.dart';
 import '../../marketstack_api.dart';
 
-final _accessKey = '182ba6ee7d8fcc4c6e4bbfdaa07de004';
+final _accessKey = 'afd3a8e404b1fdbbf1bb0062c0fada8a';
 
 class StockRequestFailure implements Exception {}
 
 class StockNotFoundFailure implements Exception {}
-
 
 class MarketStackApiClient {
   final http.Client _httpClient;
